@@ -2,6 +2,7 @@ import { Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../config/db";
+import { seedDatabase } from "../seed";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import { validateRequired, validateEmail } from "../utils/validate";
 
@@ -88,5 +89,19 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   } catch (error) {
     console.error("GetMe error:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+/**
+ * GET /api/auth/seed
+ * Seed all default users
+ */
+export const triggerSeed = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const results = await seedDatabase();
+    res.json({ success: true, message: "Database seeded successfully", data: results });
+  } catch (error: any) {
+    console.error("Trigger seed error:", error);
+    res.status(500).json({ success: false, message: "Seed failed", error: error.message || String(error) });
   }
 };
