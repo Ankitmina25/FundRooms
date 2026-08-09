@@ -93,6 +93,87 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
 };
 
 /**
+ * POST /api/auth/register
+ * Register a new user with name, email, password, and role. Returns JWT token.
+ */
+export const register = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    // Validate required fields
+    const error = validateRequired({ name, email, password, role }, ["name", "email", "password", "role"]);
+    if (error) {
+      res.status(400).json({ success: false, message: error });
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      res.status(400).json({ success: false, message: "Invalid email format" });
+      return;
+    }
+
+    if (password.length < 6) {
+      res.status(400).json({ success: false, message: "Password must be at least 6 characters long" });
+      return;
+    }
+
+    const validRoles = ["ADMIN", "SALES", "WAREHOUSE", "ACCOUNTS"];
+    const formattedRole = String(role).toUpperCase();
+    if (!validRoles.includes(formattedRole)) {
+      res.status(400).json({
+        success: false,
+        message: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
+      });
+      return;
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    if (existingUser) {
+      res.status(400).json({ success: false, message: "User with this email already exists" });
+      return;
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password: hashedPassword,
+        role: formattedRole as any,
+      },
+    });
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET || "secret",
+      { expiresIn: "24h" }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      data: {
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Register error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+/**
  * GET /api/auth/seed
  * Seed all default users
  */
@@ -105,3 +186,4 @@ export const triggerSeed = async (req: AuthRequest, res: Response): Promise<void
     res.status(500).json({ success: false, message: "Seed failed", error: error.message || String(error) });
   }
 };
+

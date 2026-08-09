@@ -20,8 +20,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isLoginEndpoint = error.config?.url?.includes("/auth/login");
-    if (error.response?.status === 401 && !isLoginEndpoint) {
+    const isAuthEndpoint =
+      error.config?.url?.includes("/auth/login") ||
+      error.config?.url?.includes("/auth/register");
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
@@ -36,6 +38,8 @@ export default api;
 export const authAPI = {
   login: (email: string, password: string) =>
     api.post("/auth/login", { email, password }),
+  register: (data: { name: string; email: string; password: string; role: string }) =>
+    api.post("/auth/register", data),
   getMe: () => api.get("/auth/me"),
 };
 

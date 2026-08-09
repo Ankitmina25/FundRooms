@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import CustomerList from "./pages/customers/CustomerList";
 import CustomerForm from "./pages/customers/CustomerForm";
@@ -46,6 +47,7 @@ function App() {
         />
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           <Route
             element={

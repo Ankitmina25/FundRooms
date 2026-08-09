@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -71,6 +71,13 @@ const Login = () => {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
+        <div className="auth-footer-link">
+          <span>Don't have an account? </span>
+          <Link to="/register" className="auth-link">
+            Register now
+          </Link>
+        </div>
 
         <div className="login-credentials">
           <p className="credentials-title">Test Credentials</p>
