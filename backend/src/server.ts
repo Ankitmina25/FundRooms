@@ -9,6 +9,14 @@ import challanRoutes from "./routes/challan.routes";
 import { prisma } from "./config/db";
 import { seedDatabase } from "./seed";
 
+process.on("uncaughtException", (err) => {
+  console.error("FATAL UNCAUGHT EXCEPTION:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("FATAL UNHANDLED REJECTION:", reason);
+});
+
 dotenv.config();
 
 const app = express();
@@ -49,9 +57,9 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/challans", challanRoutes);
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
-app.listen(PORT, async () => {
+app.listen(PORT, "0.0.0.0", async () => {
   console.log(`Server running on port ${PORT}`);
   
   // Auto-check and seed initial users if database is empty
