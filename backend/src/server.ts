@@ -74,3 +74,13 @@ app.listen(PORT, "0.0.0.0", async () => {
     console.error("Auto-seed error details:", err);
   }
 });
+
+if (process.env.PORT && Number(process.env.PORT) !== 5000) {
+  try {
+    app.listen(5000, "0.0.0.0", () => {
+      console.log("Secondary listener running on port 5000");
+    });
+  } catch (e) {
+    // ignore
+  }
+}
