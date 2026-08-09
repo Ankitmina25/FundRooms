@@ -26,15 +26,19 @@ export const login = async (req: AuthRequest, res: Response): Promise<void> => {
     }
 
     // Find user by email
+    console.log(`[LOGIN ATTEMPT] Email: "${email}", Password length: ${password?.length}`);
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
+      console.log(`[LOGIN FAILED] User not found for email: "${email}"`);
       res.status(401).json({ success: false, message: "Invalid email or password" });
       return;
     }
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log(`[LOGIN CHECK] User ID: ${user.id}, Email: "${user.email}", Password Match: ${isMatch}`);
     if (!isMatch) {
+      console.log(`[LOGIN FAILED] Password mismatch for user: "${email}"`);
       res.status(401).json({ success: false, message: "Invalid email or password" });
       return;
     }
