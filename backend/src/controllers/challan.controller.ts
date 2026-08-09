@@ -182,7 +182,7 @@ export const createChallan = async (
     }
 
     // Build product map for quick lookup
-    const productMap = new Map(products.map((p) => [p.id, p]));
+    const productMap = new Map<number, any>(products.map((p: any) => [p.id, p]));
 
     // Validate quantities and stock
     let totalQuantity = 0;
@@ -233,7 +233,7 @@ export const createChallan = async (
     const challanNumber = await generateChallanNumber();
 
     // Use transaction to create challan and reduce stock (if confirmed)
-    const challan = await prisma.$transaction(async (tx) => {
+    const challan = await prisma.$transaction(async (tx: any) => {
       // Create challan
       const newChallan = await tx.salesChallan.create({
         data: {
@@ -341,7 +341,7 @@ export const updateChallanStatus = async (
     }
 
     // Use transaction
-    const updatedChallan = await prisma.$transaction(async (tx) => {
+    const updatedChallan = await prisma.$transaction(async (tx: any) => {
       const updated = await tx.salesChallan.update({
         where: { id },
         data: { status },

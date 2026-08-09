@@ -260,7 +260,7 @@ export const addStockMovement = async (
     }
 
     // Use transaction to update stock and create movement
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       const newStock =
         type === "IN"
           ? product.currentStock + qty
