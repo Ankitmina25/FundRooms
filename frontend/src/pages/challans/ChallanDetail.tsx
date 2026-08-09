@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { challanAPI } from "../../api";
 import { useAuth } from "../../context/AuthContext";
+import { InvoiceModal } from "../../components/InvoiceModal";
 import toast from "react-hot-toast";
 
 const ChallanDetail = () => {
@@ -10,6 +11,7 @@ const ChallanDetail = () => {
   const [challan, setChallan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   const canUpdate = ["ADMIN", "SALES", "ACCOUNTS"].includes(user?.role || "");
 
@@ -70,6 +72,13 @@ const ChallanDetail = () => {
           <Link to="/challans" className="btn btn-outline">
             ← Back
           </Link>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowInvoiceModal(true)}
+            style={{ backgroundColor: "#3b82f6", color: "#ffffff", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+          >
+            📄 Export Invoice / PDF
+          </button>
           {canUpdate && challan.status === "DRAFT" && (
             <>
               <button
@@ -181,6 +190,12 @@ const ChallanDetail = () => {
           </table>
         </div>
       </div>
+      {showInvoiceModal && (
+        <InvoiceModal
+          challan={challan}
+          onClose={() => setShowInvoiceModal(false)}
+        />
+      )}
     </div>
   );
 };

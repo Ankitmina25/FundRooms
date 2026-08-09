@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # MySQL Database Service
+  db:
+    image: mysql:8.0
+    container_name: fundrooms-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: FundRooms
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 5
+
+  # Express TypeScript Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fundrooms-backend
+    restart: always
+    environment:
+      DATABASE_URL: "mysql://root:rootpassword@db:3306/FundRooms"
+      PORT: 5001
+      JWT_SECRET: "fundrooms_super_secret_jwt_key_2026"
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Vite React Frontend Service (Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fundrooms-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db-data:

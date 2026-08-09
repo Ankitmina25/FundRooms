@@ -6,6 +6,8 @@ import authRoutes from "./routes/auth.routes";
 import customerRoutes from "./routes/customer.routes";
 import productRoutes from "./routes/product.routes";
 import challanRoutes from "./routes/challan.routes";
+import { prisma } from "./config/db";
+import { seedDatabase } from "./seed";
 
 dotenv.config();
 
@@ -22,6 +24,25 @@ app.get("/", (req, res) => {
   });
 });
 
+// Seed DB Endpoint for quick manual triggering in production
+app.get("/api/seed", async (req, res) => {
+  try {
+    const results = await seedDatabase();
+    res.json({
+      success: true,
+      message: "Database seed completed successfully",
+      data: results,
+    });
+  } catch (error: any) {
+    console.error("Seed endpoint error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database seed failed",
+      error: error.message || String(error),
+    });
+  }
+});
+
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);
@@ -30,6 +51,18 @@ app.use("/api/challans", challanRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Auto-check and seed initial users if database is empty
+  try {
+    const count = await prisma.user.count();
+    console.log(`Database connected. Current user count: ${count}`);
+    if (count === 0) {
+      console.log("No users found. Running automatic seed...");
+      await seedDatabase();
+    }
+  } catch (err) {
+    console.log("Auto-seed check notice: Database table might not be migrated yet or initial setup in progress.");
+  }
 });

@@ -3,9 +3,9 @@ import bcrypt from "bcryptjs";
 
 /**
  * Seed script to create default users for all 4 roles.
- * Run with: npx ts-node src/seed.ts
+ * Can be run manually or invoked on server boot.
  */
-async function seed() {
+export async function seedDatabase() {
   console.log("Seeding database...");
 
   const users = [
@@ -15,6 +15,7 @@ async function seed() {
     { name: "Accounts User", email: "accounts@fundrooms.com", password: "accounts123", role: "ACCOUNTS" as const },
   ];
 
+  const results = [];
   for (const userData of users) {
     const existing = await prisma.user.findUnique({
       where: { email: userData.email },
@@ -22,6 +23,7 @@ async function seed() {
 
     if (existing) {
       console.log(`User ${userData.email} already exists, skipping.`);
+      results.push({ email: userData.email, role: userData.role, status: "already_exists" });
       continue;
     }
 
@@ -37,15 +39,23 @@ async function seed() {
     });
 
     console.log(`Created user: ${userData.email} (${userData.role})`);
+    results.push({ email: userData.email, role: userData.role, status: "created" });
   }
 
   console.log("Seeding complete!");
-  await prisma.$disconnect();
-  process.exit(0);
+  return results;
 }
 
-seed().catch((error) => {
-  console.error("Seed error:", error);
-  prisma.$disconnect();
-  process.exit(1);
-});
+if (require.main === module) {
+  seedDatabase()
+    .then(() => {
+      prisma.$disconnect();
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error("Seed error:", error);
+      prisma.$disconnect();
+      process.exit(1);
+    });
+}
+
