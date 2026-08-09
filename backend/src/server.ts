@@ -66,8 +66,8 @@ app.listen(PORT, "0.0.0.0", async () => {
   try {
     const count = await prisma.user.count();
     console.log(`Database connected. Current user count: ${count}`);
-    if (count === 0) {
-      console.log("No users found. Running automatic seed...");
+    if (count < 4) {
+      console.log("Database user count < 4. Running automatic seed...");
       await seedDatabase();
     }
   } catch (err) {
