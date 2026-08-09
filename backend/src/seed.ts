@@ -17,20 +17,16 @@ export async function seedDatabase() {
 
   const results = [];
   for (const userData of users) {
-    const existing = await prisma.user.findUnique({
-      where: { email: userData.email },
-    });
-
-    if (existing) {
-      console.log(`User ${userData.email} already exists, skipping.`);
-      results.push({ email: userData.email, role: userData.role, status: "already_exists" });
-      continue;
-    }
-
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    await prisma.user.create({
-      data: {
+    const user = await prisma.user.upsert({
+      where: { email: userData.email },
+      update: {
+        name: userData.name,
+        password: hashedPassword,
+        role: userData.role,
+      },
+      create: {
         name: userData.name,
         email: userData.email,
         password: hashedPassword,
@@ -38,8 +34,8 @@ export async function seedDatabase() {
       },
     });
 
-    console.log(`Created user: ${userData.email} (${userData.role})`);
-    results.push({ email: userData.email, role: userData.role, status: "created" });
+    console.log(`Seeded/Updated user: ${user.email} (${user.role})`);
+    results.push({ email: user.email, role: user.role, status: "seeded_upserted" });
   }
 
   console.log("Seeding complete!");

@@ -63,6 +63,6 @@ app.listen(PORT, async () => {
       await seedDatabase();
     }
   } catch (err) {
-    console.log("Auto-seed check notice: Database table might not be migrated yet or initial setup in progress.");
+    console.error("Auto-seed error details:", err);
   }
 });
